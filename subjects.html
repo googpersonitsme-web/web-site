@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Управління предметами">
+    <title>Журнал Успішності - Предмети</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header">	 
+            <div class="logo">	 
+                <div class="logo__Text">
+                    PRO100
+                </div>
+                <div class="logo__Image"></div>
+            </div>
+        </div>	 
+    </header>
+    
+    <nav class="menu">
+        <a href="index.html" class="menu__link">ГОЛОВНА</a> | 
+        <a href="students.html" class="menu__link">СТУДЕНТИ</a> |
+        <a href="subjects.html" class="menu__link_active">ПРЕДМЕТИ</a> |
+        <a href="grades.html" class="menu__link">ОЦІНКИ</a> |
+        <a href="gallery.html" class="menu__link">ГАЛЕРЕЯ</a> |
+        <a href="statistics.html" class="menu__link">СТАТИСТИКА</a>
+    </nav>
+    
+    <main>
+        <div class="grid-container">
+            <div class="grid-item">
+                <h2>Додати предмет</h2>
+                <form id="addSubjectForm">
+                    <label for="subjectName">Назва предмета:</label>
+                    <input type="text" id="subjectName" name="subjectName" required placeholder="Наприклад: Математика">
+                    
+                    <label for="subjectTeacher">Викладач:</label>
+                    <input type="text" id="subjectTeacher" name="subjectTeacher" required placeholder="Прізвище викладача">
+                    
+                    <label for="subjectCredits">Кредити:</label>
+                    <input type="number" id="subjectCredits" name="subjectCredits" min="1" max="10" value="3" required>
+                    
+                    <label for="subjectDescription">Опис (необов'язково):</label>
+                    <textarea id="subjectDescription" name="subjectDescription" rows="3" placeholder="Короткий опис предмета"></textarea>
+                    
+                    <button type="submit">Додати предмет</button>
+                </form>
+                <div id="formMessage" class="message"></div>
+            </div>
+            
+            <div class="grid-item" style="grid-column: span 2;">
+                <article>
+                    <h2>Список предметів</h2>
+                    
+                    <div class="search-container">
+                        <input type="text" id="searchSubject" placeholder="Пошук предмета..." class="search-input">
+                    </div>
+                    
+                    <div id="subjectsList" class="data-table-container">
+                        <p>Предметів поки немає. Додайте перший предмет!</p>
+                    </div>
+                    
+                    <div id="subjectStats" class="stats-summary">
+                        <p>Всього предметів: <strong id="subjectsCount">0</strong></p>
+                        <p>Загальна кількість кредитів: <strong id="totalCredits">0</strong></p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+    
+    <div class="grade_service">
+        <div class="grade_service__column">
+            <div class="grade_service__row">
+                <div class="grade_service__cell1" style="flex-basis: calc(50% - 0.5px)"></div>
+                <div class="grade_service__cell2" style="flex-basis: calc(50% - 0.5px)"></div>
+            </div>
+            <div class="grade_service__row">
+                <div class="grade_service__cell3" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell4" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell5" style="flex-basis: calc(100% / 3)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer_text">
+            &#169; Журнал Успішності 2025
+        </div>
+    </footer>
+    
+    <script src="js/app.js"></script>
+    <script>
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            displaySubjects();
+            updateSubjectsStats();
+        });
+
+        
+        document.getElementById('addSubjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('subjectName').value.trim();
+            const teacher = document.getElementById('subjectTeacher').value.trim();
+            const credits = parseInt(document.getElementById('subjectCredits').value);
+            const description = document.getElementById('subjectDescription').value.trim();
+            
+            const subject = {
+                id: Date.now(),
+                name: name,
+                teacher: teacher,
+                credits: credits,
+                description: description,
+                dateAdded: new Date().toLocaleDateString('uk-UA')
+            };
+            
+            subjects.push(subject);
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+            
+            document.getElementById('addSubjectForm').reset();
+            showMessage('Предмет успішно додано!', 'success');
+            displaySubjects();
+            updateSubjectsStats();
+        });
+
+        
+        document.getElementById('searchSubject').addEventListener('input', function(e) {
+            displaySubjects(e.target.value.toLowerCase());
+        });
+
+        function displaySubjects(searchTerm = '') {
+            const container = document.getElementById('subjectsList');
+            
+            let filteredSubjects = subjects;
+            if (searchTerm) {
+                filteredSubjects = subjects.filter(subject => 
+                    subject.name.toLowerCase().includes(searchTerm) ||
+                    subject.teacher.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filteredSubjects.length === 0) {
+                container.innerHTML = '<p>Предметів не знайдено</p>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><thead><tr><th>Назва</th><th>Викладач</th><th>Кредити</th><th>Опис</th><th>Дата додавання</th><th>Дії</th></tr></thead><tbody>';
+            
+            filteredSubjects.forEach(subject => {
+                html += `
+                    <tr>
+                        <td><strong>${subject.name}</strong></td>
+                        <td>${subject.teacher}</td>
+                        <td>${subject.credits}</td>
+                        <td>${subject.description || '-'}</td>
+                        <td>${subject.dateAdded}</td>
+                        <td>
+                            <button onclick="editSubject(${subject.id})" class="btn-edit">Редагувати</button>
+                            <button onclick="deleteSubject(${subject.id})" class="btn-delete">Видалити</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function deleteSubject(id) {
+            if (confirm('Ви впевнені, що хочете видалити цей предмет? Всі оцінки з цього предмета також будуть видалені.')) {
+                subjects = subjects.filter(subject => subject.id !== id);
+                localStorage.setItem('subjects', JSON.stringify(subjects));
+                
+        
+                let grades = JSON.parse(localStorage.getItem('grades')) || [];
+                grades = grades.filter(grade => grade.subjectId !== id);
+                localStorage.setItem('grades', JSON.stringify(grades));
+                
+                showMessage('Предмет видалено', 'success');
+                displaySubjects();
+                updateSubjectsStats();
+            }
+        }
+
+        function editSubject(id) {
+            const subject = subjects.find(s => s.id === id);
+            if (subject) {
+                const newName = prompt('Введіть нову назву предмета:', subject.name);
+                if (newName && newName.trim()) {
+                    subject.name = newName.trim();
+                    
+                    const newTeacher = prompt('Введіть прізвище викладача:', subject.teacher);
+                    if (newTeacher && newTeacher.trim()) {
+                        subject.teacher = newTeacher.trim();
+                        
+                        const newCredits = prompt('Введіть кількість кредитів:', subject.credits);
+                        if (newCredits && !isNaN(newCredits)) {
+                            subject.credits = parseInt(newCredits);
+                            
+                            const newDescription = prompt('Введіть опис предмета:', subject.description);
+                            subject.description = newDescription ? newDescription.trim() : '';
+                            
+                            localStorage.setItem('subjects', JSON.stringify(subjects));
+                            showMessage('Дані предмета оновлено', 'success');
+                            displaySubjects();
+                            updateSubjectsStats();
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateSubjectsStats() {
+            document.getElementById('subjectsCount').textContent = subjects.length;
+            const totalCredits = subjects.reduce((sum, subject) => sum + subject.credits, 0);
+            document.getElementById('totalCredits').textContent = totalCredits;
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = 'message';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

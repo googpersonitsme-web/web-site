@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Управління студентами">
+    <title>Журнал Успішності - Студенти</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header">	 
+            <div class="logo">	 
+                <div class="logo__Text">
+                    PRO100
+                </div>
+                <div class="logo__Image"></div>
+            </div>
+        </div>	 
+    </header>
+    
+    <nav class="menu">
+        <a href="index.html" class="menu__link">ГОЛОВНА</a> | 
+        <a href="students.html" class="menu__link_active">СТУДЕНТИ</a> |
+        <a href="subjects.html" class="menu__link">ПРЕДМЕТИ</a> |
+        <a href="grades.html" class="menu__link">ОЦІНКИ</a> |
+        <a href="gallery.html" class="menu__link">ГАЛЕРЕЯ</a> |
+        <a href="statistics.html" class="menu__link">СТАТИСТИКА</a>
+    </nav>
+    
+    <main>
+        <div class="grid-container">
+            <div class="grid-item">
+                <h2>Додати студента</h2>
+                <form id="addStudentForm">
+                    <label for="studentName">Ім'я та прізвище:</label>
+                    <input type="text" id="studentName" name="studentName" required placeholder="Введіть ім'я студента">
+                    
+                    <label for="studentGroup">Група:</label>
+                    <input type="text" id="studentGroup" name="studentGroup" required placeholder="Наприклад: ІП-21">
+                    
+                    <label for="studentEmail">Email (необов'язково):</label>
+                    <input type="email" id="studentEmail" name="studentEmail" placeholder="student@example.com">
+                    
+                    <button type="submit">Додати студента</button>
+                </form>
+                <div id="formMessage" class="message"></div>
+            </div>
+            
+            <div class="grid-item" style="grid-column: span 2;">
+                <article>
+                    <h2>Список студентів</h2>
+                    
+                    <div class="search-container">
+                        <input type="text" id="searchStudent" placeholder="Пошук студента..." class="search-input">
+                    </div>
+                    
+                    <div id="studentsList" class="data-table-container">
+                        <p>Студентів поки немає. Додайте першого студента!</p>
+                    </div>
+                    
+                    <div id="studentStats" class="stats-summary">
+                        <p>Всього студентів: <strong id="studentsCount">0</strong></p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+    
+    <div class="grade_service">
+        <div class="grade_service__column">
+            <div class="grade_service__row">
+                <div class="grade_service__cell1" style="flex-basis: calc(50% - 0.5px)"></div>
+                <div class="grade_service__cell2" style="flex-basis: calc(50% - 0.5px)"></div>
+            </div>
+            <div class="grade_service__row">
+                <div class="grade_service__cell3" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell4" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell5" style="flex-basis: calc(100% / 3)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer_text">
+            &#169; Журнал Успішності 2025
+        </div>
+    </footer>
+    
+    <script src="js/app.js"></script>
+    <script>
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            displayStudents();
+            updateStudentsCount();
+        });
+
+        
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('studentName').value.trim();
+            const group = document.getElementById('studentGroup').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            
+            const student = {
+                id: Date.now(),
+                name: name,
+                group: group,
+                email: email,
+                dateAdded: new Date().toLocaleDateString('uk-UA')
+            };
+            
+            students.push(student);
+            localStorage.setItem('students', JSON.stringify(students));
+            
+            document.getElementById('addStudentForm').reset();
+            showMessage('Студента успішно додано!', 'success');
+            displayStudents();
+            updateStudentsCount();
+        });
+
+        
+        document.getElementById('searchStudent').addEventListener('input', function(e) {
+            displayStudents(e.target.value.toLowerCase());
+        });
+
+        function displayStudents(searchTerm = '') {
+            const container = document.getElementById('studentsList');
+            
+            let filteredStudents = students;
+            if (searchTerm) {
+                filteredStudents = students.filter(student => 
+                    student.name.toLowerCase().includes(searchTerm) ||
+                    student.group.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filteredStudents.length === 0) {
+                container.innerHTML = '<p>Студентів не знайдено</p>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><thead><tr><th>Ім\'я</th><th>Група</th><th>Email</th><th>Дата додавання</th><th>Дії</th></tr></thead><tbody>';
+            
+            filteredStudents.forEach(student => {
+                html += `
+                    <tr>
+                        <td>${student.name}</td>
+                        <td>${student.group}</td>
+                        <td>${student.email || '-'}</td>
+                        <td>${student.dateAdded}</td>
+                        <td>
+                            <button onclick="editStudent(${student.id})" class="btn-edit">Редагувати</button>
+                            <button onclick="deleteStudent(${student.id})" class="btn-delete">Видалити</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Ви впевнені, що хочете видалити цього студента?')) {
+                students = students.filter(student => student.id !== id);
+                localStorage.setItem('students', JSON.stringify(students));
+                
+        
+                let grades = JSON.parse(localStorage.getItem('grades')) || [];
+                grades = grades.filter(grade => grade.studentId !== id);
+                localStorage.setItem('grades', JSON.stringify(grades));
+                
+                showMessage('Студента видалено', 'success');
+                displayStudents();
+                updateStudentsCount();
+            }
+        }
+
+        function editStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (student) {
+                const newName = prompt('Введіть нове ім\'я:', student.name);
+                if (newName && newName.trim()) {
+                    student.name = newName.trim();
+                    
+                    const newGroup = prompt('Введіть нову групу:', student.group);
+                    if (newGroup && newGroup.trim()) {
+                        student.group = newGroup.trim();
+                        
+                        const newEmail = prompt('Введіть новий email:', student.email);
+                        student.email = newEmail ? newEmail.trim() : '';
+                        
+                        localStorage.setItem('students', JSON.stringify(students));
+                        showMessage('Дані студента оновлено', 'success');
+                        displayStudents();
+                    }
+                }
+            }
+        }
+
+        function updateStudentsCount() {
+            document.getElementById('studentsCount').textContent = students.length;
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = 'message';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

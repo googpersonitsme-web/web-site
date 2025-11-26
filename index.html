@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Онлайн журнал успішності студентів">
+    <meta name="keywords" content="журнал, оцінки, студенти, успішність">
+    <title>Журнал Успішності - Головна</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header">	 
+            <div class="logo">	 
+                <div class="logo__Text">
+                   PRO100
+                </div>
+                <div class="logo__Image"></div>
+            </div>
+        </div>	 
+    </header>
+    
+    <nav class="menu">
+        <a href="index.html" class="menu__link_active">ГОЛОВНА</a> | 
+        <a href="students.html" class="menu__link">СТУДЕНТИ</a> |
+        <a href="subjects.html" class="menu__link">ПРЕДМЕТИ</a> |
+        <a href="grades.html" class="menu__link">ОЦІНКИ</a> |
+        <a href="gallery.html" class="menu__link">ГАЛЕРЕЯ</a> |
+        <a href="statistics.html" class="menu__link">СТАТИСТИКА</a>
+    </nav>
+    
+    <div class="image-container">
+        <img src="images/student1.jpg" alt="Студенти">
+        <img src="images/student2.jpg" alt="Навчання">
+        <img src="images/student3.jpg" alt="Успіх">
+    </div>
+    
+    <main>
+        <div class="grid-container">
+            <div class="grid-item">
+                <img src="images/education.jpg" alt="Освіта">
+            </div>
+            
+            <div class="grid-item">
+                <article>
+                    <h2>Система електроного журналу</h2>
+                    
+                    <div class="block">
+                        <div class="block__row">
+                            <div class="block__column">
+                                <div class="block__item">	
+                                    <img src="images/students_icon.png" alt="Студенти">
+                                    Студенти
+                                </div>
+                                <div class="block__item">
+                                    <img src="images/subjects_icon.png" alt="Предмети">
+                                    Предмети
+                                </div>
+                                <div class="block__item">
+                                    <img src="images/grades_icon.png" alt="Оцінки">
+                                    Оцінки
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p>Ласкаво просимо до онлайн-журналу обліку успішності студентів! Наша система допоможе вам ефективно управляти навчальним процесом, відстежувати прогрес кожного студента та аналізувати результати.</p>
+
+                    <p>За допомогою нашого журналу ви можете легко додавати студентів, створювати список предметів, виставляти оцінки та переглядати детальну статистику успішності. Всі дані зберігаються локально у вашому браузері.</p>
+
+                    <p>Почніть роботу з додавання студентів та предметів, а потім переходьте до виставлення оцінок та аналізу успішності!</p>
+                    
+                    <h2>Основні можливості</h2>
+                    <ul>
+                        <li>Управління списком студентів: додавання нових студентів, редагування інформації та видалення записів</li>
+                        <li>Управління предметами: створення списку предметів, що викладаються, з можливістю редагування</li>
+                        <li>Виставлення оцінок: зручний інтерфейс для швидкого внесення оцінок студентам з різних предметів</li>
+                        <li>Автоматичний розрахунок середнього балу для кожного студента та по кожному предмету</li>
+                        <li>Статистика та аналітика: перегляд графіків успішності, рейтингів студентів та динаміки оцінок</li>
+                        <li>Локальне зберігання даних: всі дані зберігаються у вашому браузері, доступ можливий без підключення до інтернету</li>
+                    </ul>
+
+                    
+                </article>
+            </div>
+            
+            <div class="grid-item">
+                <h2>Швидкий доступ</h2>
+                <div class="quick-actions">
+                    <a href="students.html" class="quick-action-btn">+ Додати студента</a>
+                    <a href="subjects.html" class="quick-action-btn">+ Додати предмет</a>
+                    <a href="grades.html" class="quick-action-btn">+ Виставити оцінку</a>
+                </div>
+                
+                <h2>Останні оцінки</h2>
+                <div id="recentGrades" class="recent-grades">
+                    <p>Оцінок поки немає</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div class="grade_service">
+        <div class="grade_service__column">
+            <div class="grade_service__row">
+                <div class="grade_service__cell1" style="flex-basis: calc(50% - 0.5px)"></div>
+                <div class="grade_service__cell2" style="flex-basis: calc(50% - 0.5px)"></div>
+            </div>
+            <div class="grade_service__row">
+                <div class="grade_service__cell3" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell4" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell5" style="flex-basis: calc(100% / 3)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer_text">
+            &#169; Журнал Успішності 2025
+        </div>
+    </footer>
+    
+    <script src="js/app.js"></script>
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+        });
+
+        function updateDashboard() {
+            const students = JSON.parse(localStorage.getItem('students')) || [];
+            const subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+            const grades = JSON.parse(localStorage.getItem('grades')) || [];
+
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalSubjects').textContent = subjects.length;
+            document.getElementById('totalGrades').textContent = grades.length;
+
+        
+            const recentGradesDiv = document.getElementById('recentGrades');
+            if (grades.length > 0) {
+                const lastGrades = grades.slice(-5).reverse();
+                let html = '<ul>';
+                lastGrades.forEach(grade => {
+                    const student = students.find(s => s.id === grade.studentId);
+                    const subject = subjects.find(s => s.id === grade.subjectId);
+                    if (student && subject) {
+                        html += `<li>${student.name} - ${subject.name}: <strong>${grade.grade}</strong></li>`;
+                    }
+                });
+                html += '</ul>';
+                recentGradesDiv.innerHTML = html;
+            }
+        }
+    </script>
+</body>
+</html>

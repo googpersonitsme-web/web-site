@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Онлайн журнал успішності студентів">
+    <meta name="keywords" content="журнал, оцінки, студенти, успішність">
+    <title>Журнал Успішності - Головна</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header">	 
+            <div class="logo">	 
+                <div class="logo__Text">
+                   PRO100
+                </div>
+                <div class="logo__Image"></div>
+            </div>
+        </div>	 
+    </header>
+    
+    <nav class="menu">
+        <a href="index.html" class="menu__link_active">ГОЛОВНА</a> | 
+        <a href="students.html" class="menu__link">СТУДЕНТИ</a> |
+        <a href="subjects.html" class="menu__link">ПРЕДМЕТИ</a> |
+        <a href="grades.html" class="menu__link">ОЦІНКИ</a> |
+        <a href="gallery.html" class="menu__link">ГАЛЕРЕЯ</a> |
+        <a href="statistics.html" class="menu__link">СТАТИСТИКА</a>
+    </nav>
+    
+   
+    
+    <main>
+        <div class="grid-container">
+           
+            
+          <h2>Фотогалерея</h2>
+                
+                <div class="gallery">
+                <img src="images/gallery/galelry1.png">
+                <img src="images/gallery/galelry2.png">
+                <img src="images/gallery/galelry3.png">
+                <img src="images/gallery/galelry4.png">
+                <img src="images/gallery/galelry5.png">
+                <img src="images/gallery/galelry6.png">
+                <img src="images/gallery/galelry7.png">
+                <img src="images/gallery/galelry8.png">
+                </div>
+
+           
+        </div>
+    </main>
+    
+    <div class="grade_service">
+        <div class="grade_service__column">
+            <div class="grade_service__row">
+                <div class="grade_service__cell1" style="flex-basis: calc(50% - 0.5px)"></div>
+                <div class="grade_service__cell2" style="flex-basis: calc(50% - 0.5px)"></div>
+            </div>
+            <div class="grade_service__row">
+                <div class="grade_service__cell3" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell4" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell5" style="flex-basis: calc(100% / 3)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer_text">
+            &#169; Журнал Успішності 2025
+        </div>
+    </footer>
+       <div class="lightbox" id="lightbox">
+  <span class="close" id="lightboxClose">&times;</span>
+  <span class="prev" id="lightboxPrev">&#10094;</span>
+  <img id="lightboxImg">
+  <span class="next" id="lightboxNext">&#10095;</span>
+</div>
+    <script src="js/app.js"></script>
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+        });
+
+        function updateDashboard() {
+            const students = JSON.parse(localStorage.getItem('students')) || [];
+            const subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+            const grades = JSON.parse(localStorage.getItem('grades')) || [];
+
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalSubjects').textContent = subjects.length;
+            document.getElementById('totalGrades').textContent = grades.length;
+
+        
+            const recentGradesDiv = document.getElementById('recentGrades');
+            if (grades.length > 0) {
+                const lastGrades = grades.slice(-5).reverse();
+                let html = '<ul>';
+                lastGrades.forEach(grade => {
+                    const student = students.find(s => s.id === grade.studentId);
+                    const subject = subjects.find(s => s.id === grade.subjectId);
+                    if (student && subject) {
+                        html += `<li>${student.name} - ${subject.name}: <strong>${grade.grade}</strong></li>`;
+                    }
+                });
+                html += '</ul>';
+                recentGradesDiv.innerHTML = html;
+            }
+        }
+    </script>
+    <script src="js/gallery.js"></script>
+ 
+</body>
+</html>

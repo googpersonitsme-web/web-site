@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Статистика успішності">
+    <title>Журнал Успішності - Статистика</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header">	 
+            <div class="logo">	 
+                <div class="logo__Text">
+                    PRO100
+                </div>
+                <div class="logo__Image"></div>
+            </div>
+        </div>	 
+    </header>
+    
+    <nav class="menu">
+        <a href="index.html" class="menu__link">ГОЛОВНА</a> | 
+        <a href="students.html" class="menu__link">СТУДЕНТИ</a> |
+        <a href="subjects.html" class="menu__link">ПРЕДМЕТИ</a> |
+        <a href="grades.html" class="menu__link">ОЦІНКИ</a> |
+        <a href="gallery.html" class="menu__link">ГАЛЕРЕЯ</a> |
+        <a href="statistics.html" class="menu__link_active">СТАТИСТИКА</a>
+    </nav>
+    
+    <main>
+        <div class="grid-container">
+            <div class="grid-item" style="grid-column: span 3;">
+                <article>
+                    <h2>Загальна статистика</h2>
+                    
+                    <div class="statistics-dashboard">
+                        <div class="stat-card-large">
+                            <h3>Студентів</h3>
+                            <p class="stat-number-large" id="totalStudents">0</p>
+                        </div>
+                        <div class="stat-card-large">
+                            <h3>Предметів</h3>
+                            <p class="stat-number-large" id="totalSubjects">0</p>
+                        </div>
+                        <div class="stat-card-large">
+                            <h3>Оцінок</h3>
+                            <p class="stat-number-large" id="totalGrades">0</p>
+                        </div>
+                        <div class="stat-card-large">
+                            <h3>Середній бал</h3>
+                            <p class="stat-number-large" id="averageGrade">-</p>
+                        </div>
+                    </div>
+                    
+                    <h2>Рейтинг студентів за середнім балом</h2>
+                    <div id="studentRanking" class="ranking-container">
+                        <p>Дані відсутні</p>
+                    </div>
+                    
+                    <h2>Успішність по предметах</h2>
+                    <div id="subjectStats" class="subject-stats-container">
+                        <p>Дані відсутні</p>
+                    </div>
+                    
+                    <h2>Розподіл оцінок</h2>
+                    <div id="gradeDistribution" class="grade-distribution">
+                        <p>Дані відсутні</p>
+                    </div>
+                    
+                    <h2>Детальна статистика по студентах</h2>
+                    <div class="filter-container">
+                        <select id="filterStudentStats" class="filter-select">
+                            <option value="">Оберіть студента</option>
+                        </select>
+                    </div>
+                    <div id="studentDetails" class="student-details-container">
+                        <p>Оберіть студента для перегляду детальної статистики</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+    
+    <div class="grade_service">
+        <div class="grade_service__column">
+            <div class="grade_service__row">
+                <div class="grade_service__cell1" style="flex-basis: calc(50% - 0.5px)"></div>
+                <div class="grade_service__cell2" style="flex-basis: calc(50% - 0.5px)"></div>
+            </div>
+            <div class="grade_service__row">
+                <div class="grade_service__cell3" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell4" style="flex-basis: calc(100% / 3)"></div>
+                <div class="grade_service__cell5" style="flex-basis: calc(100% / 3)"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer_text">
+            &#169; Журнал Успішності 2025
+        </div>
+    </footer>
+    
+    <script src="js/app.js"></script>
+    <script>
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+        let grades = JSON.parse(localStorage.getItem('grades')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFilterStudents();
+            updateGeneralStats();
+            displayStudentRanking();
+            displaySubjectStats();
+            displayGradeDistribution();
+        });
+
+        function loadFilterStudents() {
+            const filterStudent = document.getElementById('filterStudentStats');
+            students.forEach(student => {
+                const option = new Option(`${student.name} (${student.group})`, student.id);
+                filterStudent.add(option);
+            });
+            
+            filterStudent.addEventListener('change', function() {
+                if (this.value) {
+                    displayStudentDetails(parseInt(this.value));
+                } else {
+                    document.getElementById('studentDetails').innerHTML = '<p>Оберіть студента для перегляду детальної статистики</p>';
+                }
+            });
+        }
+
+        function updateGeneralStats() {
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('totalSubjects').textContent = subjects.length;
+            document.getElementById('totalGrades').textContent = grades.length;
+            
+            if (grades.length > 0) {
+                const average = grades.reduce((sum, grade) => sum + grade.grade, 0) / grades.length;
+                document.getElementById('averageGrade').textContent = average.toFixed(2);
+            }
+        }
+
+        function displayStudentRanking() {
+            const container = document.getElementById('studentRanking');
+            
+            if (students.length === 0 || grades.length === 0) {
+                container.innerHTML = '<p>Дані відсутні</p>';
+                return;
+            }
+            
+            // Підрахунок середнього балу для кожного студента
+            const studentAverages = students.map(student => {
+                const studentGrades = grades.filter(g => g.studentId === student.id);
+                const average = studentGrades.length > 0 
+                    ? studentGrades.reduce((sum, g) => sum + g.grade, 0) / studentGrades.length 
+                    : 0;
+                return {
+                    id: student.id,
+                    name: student.name,
+                    group: student.group,
+                    average: average,
+                    gradesCount: studentGrades.length
+                };
+            });
+            
+            // Сортування за середнім балом
+            studentAverages.sort((a, b) => b.average - a.average);
+            
+            let html = '<table class="ranking-table"><thead><tr><th>Місце</th><th>Студент</th><th>Група</th><th>Середній бал</th><th>Кількість оцінок</th></tr></thead><tbody>';
+            
+            studentAverages.forEach((student, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                const gradeClass = student.average >= 90 ? 'grade-excellent' : 
+                                   student.average >= 75 ? 'grade-good' : 
+                                   student.average >= 60 ? 'grade-satisfactory' : 'grade-fail';
+                
+                html += `
+                    <tr>
+                        <td><strong>${index + 1} ${medal}</strong></td>
+                        <td>${student.name}</td>
+                        <td>${student.group}</td>
+                        <td class="${gradeClass}"><strong>${student.average.toFixed(2)}</strong></td>
+                        <td>${student.gradesCount}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displaySubjectStats() {
+            const container = document.getElementById('subjectStats');
+            
+            if (subjects.length === 0 || grades.length === 0) {
+                container.innerHTML = '<p>Дані відсутні</p>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><thead><tr><th>Предмет</th><th>Викладач</th><th>Середній бал</th><th>Кількість оцінок</th><th>Найвища оцінка</th><th>Найнижча оцінка</th></tr></thead><tbody>';
+            
+            subjects.forEach(subject => {
+                const subjectGrades = grades.filter(g => g.subjectId === subject.id);
+                
+                if (subjectGrades.length > 0) {
+                    const average = subjectGrades.reduce((sum, g) => sum + g.grade, 0) / subjectGrades.length;
+                    const highest = Math.max(...subjectGrades.map(g => g.grade));
+                    const lowest = Math.min(...subjectGrades.map(g => g.grade));
+                    
+                    const gradeClass = average >= 90 ? 'grade-excellent' : 
+                                       average >= 75 ? 'grade-good' : 
+                                       average >= 60 ? 'grade-satisfactory' : 'grade-fail';
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${subject.name}</strong></td>
+                            <td>${subject.teacher}</td>
+                            <td class="${gradeClass}"><strong>${average.toFixed(2)}</strong></td>
+                            <td>${subjectGrades.length}</td>
+                            <td>${highest}</td>
+                            <td>${lowest}</td>
+                        </tr>
+                    `;
+                } else {
+                    html += `
+                        <tr>
+                            <td><strong>${subject.name}</strong></td>
+                            <td>${subject.teacher}</td>
+                            <td colspan="4">Оцінок немає</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displayGradeDistribution() {
+            const container = document.getElementById('gradeDistribution');
+            
+            if (grades.length === 0) {
+                container.innerHTML = '<p>Дані відсутні</p>';
+                return;
+            }
+            
+            const distribution = {
+                excellent: grades.filter(g => g.grade >= 90).length,
+                good: grades.filter(g => g.grade >= 75 && g.grade < 90).length,
+                satisfactory: grades.filter(g => g.grade >= 60 && g.grade < 75).length,
+                fail: grades.filter(g => g.grade < 60).length
+            };
+            
+            const total = grades.length;
+            
+            let html = `
+                <div class="distribution-chart">
+                    <div class="distribution-bar">
+                        <div class="bar-segment grade-excellent" style="width: ${(distribution.excellent / total * 100)}%">
+                            <span>${distribution.excellent}</span>
+                        </div>
+                        <div class="bar-segment grade-good" style="width: ${(distribution.good / total * 100)}%">
+                            <span>${distribution.good}</span>
+                        </div>
+                        <div class="bar-segment grade-satisfactory" style="width: ${(distribution.satisfactory / total * 100)}%">
+                            <span>${distribution.satisfactory}</span>
+                        </div>
+                        <div class="bar-segment grade-fail" style="width: ${(distribution.fail / total * 100)}%">
+                            <span>${distribution.fail}</span>
+                        </div>
+                    </div>
+                    <div class="distribution-legend">
+                        <div class="legend-item">
+                            <span class="legend-color grade-excellent"></span>
+                            Відмінно (90-100): ${distribution.excellent} (${(distribution.excellent / total * 100).toFixed(1)}%)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color grade-good"></span>
+                            Добре (75-89): ${distribution.good} (${(distribution.good / total * 100).toFixed(1)}%)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color grade-satisfactory"></span>
+                            Задовільно (60-74): ${distribution.satisfactory} (${(distribution.satisfactory / total * 100).toFixed(1)}%)
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color grade-fail"></span>
+                            Незадовільно (0-59): ${distribution.fail} (${(distribution.fail / total * 100).toFixed(1)}%)
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function displayStudentDetails(studentId) {
+            const container = document.getElementById('studentDetails');
+            const student = students.find(s => s.id === studentId);
+            
+            if (!student) {
+                container.innerHTML = '<p>Студента не знайдено</p>';
+                return;
+            }
+            
+            const studentGrades = grades.filter(g => g.studentId === studentId);
+            
+            if (studentGrades.length === 0) {
+                container.innerHTML = `<p>У студента ${student.name} ще немає оцінок</p>`;
+                return;
+            }
+            
+            const average = studentGrades.reduce((sum, g) => sum + g.grade, 0) / studentGrades.length;
+            
+            let html = `
+                <div class="student-detail-card">
+                    <h3>${student.name} (${student.group})</h3>
+                    <p><strong>Середній бал:</strong> ${average.toFixed(2)}</p>
+                    <p><strong>Всього оцінок:</strong> ${studentGrades.length}</p>
+                </div>
+                
+                <h3>Оцінки по предметах:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Предмет</th>
+                            <th>Середній бал</th>
+                            <th>Кількість оцінок</th>
+                            <th>Найвища</th>
+                            <th>Найнижча</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            subjects.forEach(subject => {
+                const subjectGrades = studentGrades.filter(g => g.subjectId === subject.id);
+                
+                if (subjectGrades.length > 0) {
+                    const subjectAverage = subjectGrades.reduce((sum, g) => sum + g.grade, 0) / subjectGrades.length;
+                    const highest = Math.max(...subjectGrades.map(g => g.grade));
+                    const lowest = Math.min(...subjectGrades.map(g => g.grade));
+                    
+                    const gradeClass = subjectAverage >= 90 ? 'grade-excellent' : 
+                                       subjectAverage >= 75 ? 'grade-good' : 
+                                       subjectAverage >= 60 ? 'grade-satisfactory' : 'grade-fail';
+                    
+                    html += `
+                        <tr>
+                            <td>${subject.name}</td>
+                            <td class="${gradeClass}"><strong>${subjectAverage.toFixed(2)}</strong></td>
+                            <td>${subjectGrades.length}</td>
+                            <td>${highest}</td>
+                            <td>${lowest}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
